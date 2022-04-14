@@ -46,22 +46,46 @@ module FileInCRC
         0x4400, 0x84C1, 0x8581, 0x4540, 0x8701, 0x47C0, 0x4680, 0x8641,
         0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040  ]
         
+
+    def FileInCRC.file_calculateCRC(path)
+
+        crc = 0
+        file_size = File.size(path) 
+
+        if (file_size)
+            open(path, 'rb') do |file|
+                crc = crc & 0xFFFF
+
+                data = file.read()
+                data.each_byte {
+                    |byte| 
+                    index   = (crc ^ byte) & 0x00FF
+                    crc     = ((crc >> 8) & 0x00FF ) ^ CFE_CRCTable[index]
+                    
+                }
+
+            end
+
+        end
+
+        return crc
+    end
+
     def FileInCRC.file_in_calculateCRC(input_crc, file_segments)
 
-        puts file_segments.size
         crc = input_crc & 0xFFFF
 
         file_segments.each_byte {
             |byte| 
             index   = (crc ^ byte) & 0x00FF
-
-            puts "%04X" % [crc]
             crc     = ((crc >> 8) & 0x00FF ) ^ CFE_CRCTable[index]
             
         }
-
+        puts crc
         return crc
     end
+
+
 end
 
 # end of FileInCRC module
